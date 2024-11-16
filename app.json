@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "MaxsMusicPlayer",
-    "slug": "MaxsMusicPlayer",
+    "name": "SimpleMusicPlayer",
+    "slug": "simplemusicplayer",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "simplemusicplayer",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
