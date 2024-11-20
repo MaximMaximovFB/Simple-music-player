@@ -1,33 +1,25 @@
 import { FlatList, Text, View } from 'react-native'
-import React from 'react'
-import { Link } from 'expo-router';
+import React, { useCallback } from 'react'
+import { Link, router } from 'expo-router';
 // import { FlatList } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import CustomButton from '../components/CustomButton'
+import { StatusBar } from 'expo-status-bar';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const Welcome = () => {
 
   return (
-    <SafeAreaView>
-      <FlatList
-        data= {[{ id: 1},{ id: 2},{ id: 3}, ]}
-        keyExtractor={(item) => item.$id}
-        renderItem={( { item }) => (
-          <Text className="text-3xl font-scExtraBold"> {item.id}</Text>
-        )}
-        ListHeaderComponent={( ) => (
-          <View className="my-6 px-4 space-y-6">
-            <View className="justify-between  items-start flex-row mb-6">
-              <View>
-                <Text className=''>
-                  Здесь будут кнопки!
-                </Text>
-              </View>
-            </View>
-          </View>
-        )}
+    <SafeAreaView className=" h-full bg-primary items-center justify-center">
+      {/* <Link href="/music" className="text-white items-center justify-center text-3xl font-scExtraBold">simple music player</Link>s */}
+      <CustomButton
+        title = "simple music player"
+        handlePress={() => router.push('/music')}
+        containerStyles="border-0"
       />
     </SafeAreaView>
   )
 }
 
 export default Welcome
+
