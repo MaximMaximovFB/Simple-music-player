@@ -11,7 +11,6 @@ const InputField = ({
   otherStyles,
   ...props
 }) => {
-  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <View className={`space-y-2 ${otherStyles}`}>
@@ -24,7 +23,6 @@ const InputField = ({
           placeholder={placeholder}
           placeholderTextColor="#7B7B8B"
           onChangeText={handleChangeText}
-          secureTextEntry={title === "Password" && !showPassword}
           {...props}
         />
       </View>

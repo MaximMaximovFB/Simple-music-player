@@ -3,11 +3,16 @@ import React, { Component, createContext } from 'react';
 import * as MediaLibrary from 'expo-media-library';
  
 
-const AudioContext = createContext();
+export const AudioContext = createContext();
 
 export class AudioProvider extends Component {
     constructor(props) {
-        super(props)
+        super(props);
+        this.state = {
+            audioFiles: [],
+            permissionError: false
+            
+        }
     }
 
     permissionAlert = () => {
@@ -21,7 +26,18 @@ export class AudioProvider extends Component {
         )
     }
 
-
+    getAudioFiles = async () => {
+        let media = await MediaLibrary.getAssetsAsync({
+            mediaType: 'audio'
+        });
+        media = await MediaLibrary.getAssetsAsync({
+            mediaType: 'audio', 
+            first: media.totalCount,
+        });
+        // console.log(media.assets.length);
+         console.log(media);
+        this.setState({...this.state,audioFiles:media.assets})
+    }
 
     getPermission = async () => {
         // {
@@ -36,10 +52,13 @@ export class AudioProvider extends Component {
             this.getAudioFiles();
         }
 
+        if (!permission.canAskAgain && permission.granted) {
+
+        }
+
         if (!permission.granted && permission.canAskAgain) {
             const {status, canAskAgain} = await MediaLibrary.requestPermissionsAsync();
             if (status==='denied' && canAskAgain) {
-                // Alert.
                 this.permissionAlert();
             }
             if (status==='granted') {
@@ -47,7 +66,8 @@ export class AudioProvider extends Component {
             }
 
             if (status==='denied' && !canAskAgain) {
-                // Error
+                //error
+                this.setState({...this.state, permissionError: true})
             }
         }
     };
@@ -56,15 +76,19 @@ export class AudioProvider extends Component {
             this.getPermission();
     }
     
-    getAudioFiles = async () => {
-        MediaLibrary.getAssetsAsync({
-            mediaType: 'audio'
-        })
-        console.log(media);
-    }
+
 
     render() {
-        return <AudioContext.Provider value={{}}>
+        if (this.state.permissionError) {
+            return (
+                <View className="flex-1 justify-center items-center">
+                    <Text className = "text-white font-scBold">
+                        Apparently you have not given permission to read audio files. You can always change this in your device settings.
+                    </Text>
+                </View>
+            )
+        } 
+        return <AudioContext.Provider value={{audioFiles: this.state.audioFiles}}>
             {this.props.children}
         </AudioContext.Provider>
     }

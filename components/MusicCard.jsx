@@ -4,7 +4,7 @@ import React from 'react'
 const MusicCard = ({ music : { title, thumbnail, soundtrack, creator} }) => {
   return (
     <View>
-      <Text className="text-white">MusicCard</Text>
+      <Text className="text-white">{title}</Text>
     </View>
   )
 }

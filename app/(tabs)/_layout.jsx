@@ -4,6 +4,8 @@ import { SplashScreen, Stack, Tabs, Redirect} from 'expo-router'
 import {useFonts} from "expo-font";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
+import AudioProvider from '../../context/AudioProvider'  
+
 const TabIcon = ({ icon, color, name, focused, size }) => {
     return (
       <View className= "items-center justify-center">
@@ -21,7 +23,8 @@ const TabIcon = ({ icon, color, name, focused, size }) => {
 
 const TabsLayout = () => {
   return (
-    <>
+    <AudioProvider>
+      <>
         <Tabs
         screenOptions={{
             tabBarShowLabel: false,
@@ -85,7 +88,9 @@ const TabsLayout = () => {
             }}
         />
         </Tabs>
-    </>
+      </>
+    </AudioProvider>
+    
   )
 }
 
