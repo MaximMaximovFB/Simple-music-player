@@ -11,6 +11,7 @@ import CustomButton from '../../components/CustomButton'
 import CustomIconButton from '../../components/CustomIconButton'
 import SearchInput from '../../components/SearchInput'
 import MusicCard from '../../components/MusicCard'
+import Menu from '../../components/Menu';
 
 import {AudioContext} from '../../context/AudioProvider';
 
@@ -31,7 +32,7 @@ export class Music extends Component {
   });
 
   rowRenderer = (type, item) => {
-    return <Text className= "text-secondary font-scLight">{item.filename}</Text>
+    return <MusicCard title={item.filename} duration = {item.duration} menuPress = {() => {console.log("Option is opening")}}/>
   };
 
   render() {
@@ -52,6 +53,7 @@ export class Music extends Component {
                             iconName = "play-circle-fill"
                             iconSize = {24}
                             iconColor = "white"
+                            libName = {"MaterialIcons"}
                           />
                           <CustomIconButton
                             handlePress = {() => {}}
@@ -59,6 +61,7 @@ export class Music extends Component {
                             iconName = "add-box"
                             iconSize = {24}
                             iconColor = "white"
+                            libName = {"MaterialIcons"}
                           />
                           <CustomIconButton
                             handlePress = {() => {}}
@@ -66,17 +69,22 @@ export class Music extends Component {
                             iconName = "refresh"
                             iconSize = {24}
                             iconColor = "white"
+                            libName = {"MaterialIcons"}
                           />                       
                         </View>
                       </View>
-                      <View className= "flex-1">
+                      <View className= "flex-1 mt-2 border-t-2 border-solid border-secondary">
                         <RecyclerListView
                           dataProvider={dataProvider} 
                           layoutProvider={this.layoutProvider} 
                           rowRenderer={this.rowRenderer}
                         />
+                        
                       </View>
                     </View>
+                    <Menu
+                          visible={true}
+                    />
                 </SafeAreaView>
                 )
             }}

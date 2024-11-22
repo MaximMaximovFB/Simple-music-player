@@ -9,16 +9,16 @@ const SearchInput = ({ initialQuery }) => {
   const [query, setQuery] = useState(initialQuery || "");
 
   return (
-    <View className="flex flex-row items-center space-x-6 w-full h-16 px-4 bg-black-100 border-b-2 border-white focus:border-secondary">
+    <View className="flex flex-row items-center space-x-6 w-full h-16 px-4 bg-black-100 border-b-2 border-tertiary">
       <TextInput
-        className="text-base mt-0.5 text-white flex-1 font-scRegular"
+        className="text-base mt-0.5 text-secondary flex-1 font-scRegular"
         value={query}
         placeholder="Search for a music track"
         placeholderTextColor="#CDCDE0"
         onChangeText={(e) => setQuery(e)}
       />
 
-      <TouchableOpacity
+      <TouchableOpacity 
         onPress={() => {
           if (query === "")
             return Alert.alert(
