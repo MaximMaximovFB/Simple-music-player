@@ -1,28 +1,31 @@
-import { View, Text } from 'react-native'
+import { View, Text, TouchableWithoutFeedback } from 'react-native'
 import React from 'react'
 import CustomIconButton from './CustomIconButton';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
 
 // const convertTime = minutes => {
 //   return minutes;
 // }
 
-const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuPress }) => {
+const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuPress, onAudioPress }) => {
   return (
     <>
       <View className = "flex-row self-center items-center border-tertiary border-solid border-b-2 py-1">
-        <View className = "flex-row w-[85%]">
-          <View className= "self-center p-2 mr-1 rounded-md border-secondary border-solid border-2">
-            <View >
-              <MaterialCommunityIcons name="music" size={24} color="white" />
+        <TouchableWithoutFeedback onPress={onAudioPress}>
+          <View className = "flex-row w-[85%]">
+            <View className= "self-center p-2 mr-1 rounded-md border-secondary border-solid border-2">
+              <View >
+                <MaterialCommunityIcons name="music" size={24} color="white" />
+              </View>
+            </View>
+            <View className = "flex-col flex-1">
+              <Text numberOfLines={1} className = "text-secondary font-scBold">{title}</Text>
+              <Text className = "text-quaternary font-scRegular">{duration}</Text>
             </View>
           </View>
-          <View className = "flex-col flex-1">
-            <Text numberOfLines={1} className = "text-secondary font-scBold">{title}</Text>
-            <Text className = "text-quaternary font-scRegular">{duration}</Text>
-          </View>
-        </View>
-        <View className = "flex-1">
+        </TouchableWithoutFeedback>
+        <View className = "flex-1 pt-4">
           <CustomIconButton
             handlePress= {menuPress}
             iconName={"dots-vertical"}

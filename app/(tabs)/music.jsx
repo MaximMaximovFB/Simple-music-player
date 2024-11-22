@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { LayoutProvider, RecyclerListView } from 'recyclerlistview';
+import { Audio } from 'expo-av';
 
 import CustomButton from '../../components/CustomButton'
 import CustomIconButton from '../../components/CustomIconButton'
@@ -14,10 +15,18 @@ import MusicCard from '../../components/MusicCard'
 import Menu from '../../components/Menu';
 
 import {AudioContext} from '../../context/AudioProvider';
+import {playFunc, pauseFunc, resumeFunc} from '../player-logic/audioController'
 
 export class Music extends Component {
 
   static contextType = AudioContext;
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      // optionModalVisible: false,
+    }
+  }
 
   layoutProvider = new LayoutProvider((i) => 'audio', (type, dimension) => {
     switch (type){
@@ -31,8 +40,53 @@ export class Music extends Component {
     }
   });
 
+  handleAudioPress = async (audio) => {
+    const {playbackObject, soundObject, currentAudio, updateState} = this.context;
+    // {"androidImplementation": "SimpleExoPlayer", 
+    //   "audioPan": 0, "didJustFinish": false, 
+    //   "durationMillis": 213028, "isBuffering": true, 
+    //   "isLoaded": true, "isLooping": false, "isMuted": false, 
+    //   "isPlaying": true, "playableDurationMillis": 26122, 
+    //   "positionMillis": 0, "progressUpdateIntervalMillis": 500, 
+    //   "rate": 1, "shouldCorrectPitch": false, "shouldPlay": true, 
+    //   "uri": "/storage/emulated/0/Download/Poor_Mans_Poison_-_Hells_Comin_with_Me_(musmore.com).mp3", 
+    //   "volume": 1} 
+
+    if (soundObject === null) {
+      
+      // console.log("Audio pressed");
+      // console.log(audio);
+      const playbackObject = new Audio.Sound();
+      const status = await playFunc(playbackObject, audio.uri);
+      // console.log(status);
+      return updateState(this.context, {currentAudio: audio, playbackObject: playbackObject, soundObject: status});
+      // return this.setState({...this.state, currentAudio: audio, playbackObject: playbackObject, soundObject: status}) 
+    }
+
+    if (soundObject.isLoaded && soundObject.isPlaying){
+      // console.log("Audio is playing");
+      const status = await pauseFunc(playbackObject);
+      return updateState(this.context, {soundObject: status});
+      // return this.setState({...this.state, soundObject: status});
+    }
+    // this.state.soundObject.didJustFinish this.state.currentAudio.id === audio.id
+    if (soundObject.isLoaded && !soundObject.isPlaying && currentAudio.id === audio.id) {
+      const status = await resumeFunc(playbackObject);
+      return updateState(this.context, {soundObject: status});
+      // return this.setState({...this.state, soundObject: status});
+    } 
+  }
+
   rowRenderer = (type, item) => {
-    return <MusicCard title={item.filename} duration = {item.duration} menuPress = {() => {console.log("Option is opening")}}/>
+    return (
+      <MusicCard 
+        title={item.filename} 
+        duration = {item.duration} 
+        onAudioPress={() => {this.handleAudioPress(item)}}
+        menuPress = {() => {console.log("Option is opening")}}
+
+      />
+    )
   };
 
   render() {

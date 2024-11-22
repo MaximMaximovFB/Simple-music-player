@@ -12,7 +12,10 @@ export class AudioProvider extends Component {
         this.state = {
             audioFiles: [],
             permissionError: false,
-            dataProvider: new DataProvider((firstRule,secondRule) => firstRule !== secondRule)
+            dataProvider: new DataProvider((firstRule,secondRule) => firstRule !== secondRule),
+            playbackObject: null,
+            soundObject: null,
+            currentAudio: {},
         };
     }
 
@@ -79,13 +82,15 @@ export class AudioProvider extends Component {
     };
 
     componentDidMount(){
-            this.getPermission();
+        this.getPermission();
     }
     
-
+    updateState = (previousState, newState = {}) => {
+        this.setState({...previousState, ...newState});
+    }
 
     render() {
-        const {audioFiles, dataProvider, permissionError} = this.state;
+        const {audioFiles, dataProvider, permissionError, playbackObject, soundObject, currentAudio} = this.state;
         if (permissionError) {
             return (
                 <View className="flex-1 justify-center items-center">
@@ -96,7 +101,7 @@ export class AudioProvider extends Component {
             );
         } 
         return (
-        <AudioContext.Provider value={{ audioFiles, dataProvider}}>
+        <AudioContext.Provider value={{ audioFiles, dataProvider, playbackObject, soundObject, currentAudio, updateState: this.updateState}}>
             {this.props.children}
         </AudioContext.Provider>
         );

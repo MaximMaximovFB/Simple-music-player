@@ -1,0 +1,40 @@
+// {"androidImplementation": "SimpleExoPlayer", 
+    //   "audioPan": 0, "didJustFinish": false, 
+    //   "durationMillis": 213028, "isBuffering": true, 
+    //   "isLoaded": true, "isLooping": false, "isMuted": false, 
+    //   "isPlaying": true, "playableDurationMillis": 26122, 
+    //   "positionMillis": 0, "progressUpdateIntervalMillis": 500, 
+    //   "rate": 1, "shouldCorrectPitch": false, "shouldPlay": true, 
+    //   "uri": "/storage/emulated/0/Download/Poor_Mans_Poison_-_Hells_Comin_with_Me_(musmore.com).mp3", 
+    //   "volume": 1} 
+
+
+//play
+export const playFunc = async (playbackObject, uri) => {
+    try {
+        return await playbackObject.loadAsync({uri}, {shouldPlay: true});
+    } catch (error) {
+        console.log("Error in play-func of the audioController", error.message);
+    }
+    // console.log(status);
+}
+
+//pause
+export const pauseFunc = async (playbackObject) => {
+    try {
+        return await playbackObject.setStatusAsync({shouldPlay: false});
+    } catch (error) {
+        console.log("Error in pause-func of the audioController", error.message);
+    }
+    // console.log(status);
+}
+//resume
+export const resumeFunc = async (playbackObject) => {
+    try {
+        return await playbackObject.playAsync();
+    } catch (error) {
+        console.log("Error in resume-func of the audioController", error.message);
+    }
+    // console.log(status);
+}
+//select another
