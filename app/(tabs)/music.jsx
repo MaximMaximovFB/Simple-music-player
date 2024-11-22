@@ -15,7 +15,7 @@ import MusicCard from '../../components/MusicCard'
 import Menu from '../../components/Menu';
 
 import {AudioContext} from '../../context/AudioProvider';
-import {playFunc, pauseFunc, resumeFunc} from '../player-logic/audioController'
+import {playFunc, pauseFunc, resumeFunc, playNextFunc} from '../player-logic/audioController'
 
 export class Music extends Component {
 
@@ -63,7 +63,7 @@ export class Music extends Component {
       // return this.setState({...this.state, currentAudio: audio, playbackObject: playbackObject, soundObject: status}) 
     }
 
-    if (soundObject.isLoaded && soundObject.isPlaying){
+    if (soundObject.isLoaded && soundObject.isPlaying && currentAudio.id === audio.id){
       // console.log("Audio is playing");
       const status = await pauseFunc(playbackObject);
       return updateState(this.context, {soundObject: status});
@@ -75,6 +75,11 @@ export class Music extends Component {
       return updateState(this.context, {soundObject: status});
       // return this.setState({...this.state, soundObject: status});
     } 
+
+    if (soundObject.isLoaded && currentAudio.id !== audio.id) {
+      const status = await playNextFunc(playbackObject, audio.uri);
+      return updateState(this.context, {currentAudio: audio, soundObject: status});
+    }
   }
 
   rowRenderer = (type, item) => {

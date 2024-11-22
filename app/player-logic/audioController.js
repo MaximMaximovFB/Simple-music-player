@@ -37,4 +37,15 @@ export const resumeFunc = async (playbackObject) => {
     }
     // console.log(status);
 }
+
 //select another
+
+export const playNextFunc = async (playbackObject, uri) => {
+    try {
+        await playbackObject.stopAsync();
+        await playbackObject.unloadAsync();
+        return await playFunc(playbackObject, uri)
+    } catch (error) {
+        console.log("Error in playNext-func of the audioController", error.message);
+    }
+}
