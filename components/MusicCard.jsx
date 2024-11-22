@@ -1,10 +1,10 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-const MusicCard = ({ music : { title, thumbnail, soundtrack, creator} }) => {
+const MusicCard = ({ music : { title, thumbnail, soundtrack, creator, key} }) => {
   return (
     <View>
-      <Text className="text-white">{title}</Text>
+      <Text key={item.id} className="text-white">{title}</Text>
     </View>
   )
 }

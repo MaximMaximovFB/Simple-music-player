@@ -4,7 +4,7 @@ import { SplashScreen, Stack, Tabs, Redirect} from 'expo-router'
 import {useFonts} from "expo-font";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
-import AudioProvider from '../../context/AudioProvider'  
+import {AudioProvider} from '../../context/AudioProvider'  
 
 const TabIcon = ({ icon, color, name, focused, size }) => {
     return (
