@@ -1,4 +1,4 @@
-import { Alert, FlatList, Text, View, PermissionsAndroid, ScrollView, Dimensions } from 'react-native'
+import { Alert, FlatList, Text, View, PermissionsAndroid, ScrollView, Dimensions, RefreshControl } from 'react-native'
 import React, { useCallback, useState, Component } from 'react'
 import { Link, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,63 +41,70 @@ export class Music extends Component {
   });
 
   handleAudioPress = async (audio) => {
-    const {playbackObject, soundObject, currentAudio, updateState} = this.context;
-    // {"androidImplementation": "SimpleExoPlayer", 
-    //   "audioPan": 0, "didJustFinish": false, 
-    //   "durationMillis": 213028, "isBuffering": true, 
-    //   "isLoaded": true, "isLooping": false, "isMuted": false, 
-    //   "isPlaying": true, "playableDurationMillis": 26122, 
-    //   "positionMillis": 0, "progressUpdateIntervalMillis": 500, 
-    //   "rate": 1, "shouldCorrectPitch": false, "shouldPlay": true, 
-    //   "uri": "/storage/emulated/0/Download/Poor_Mans_Poison_-_Hells_Comin_with_Me_(musmore.com).mp3", 
-    //   "volume": 1} 
+    const {playbackObject, soundObject, currentAudio, updateState, audioFiles} = this.context;
 
+    //first time play
     if (soundObject === null) {
       
-      // console.log("Audio pressed");
-      // console.log(audio);
       const playbackObject = new Audio.Sound();
       const status = await playFunc(playbackObject, audio.uri);
-      // console.log(status);
-      return updateState(this.context, {currentAudio: audio, playbackObject: playbackObject, soundObject: status});
-      // return this.setState({...this.state, currentAudio: audio, playbackObject: playbackObject, soundObject: status}) 
+      const index = audioFiles.indexOf(audio);
+      return updateState(this.context, {
+        currentAudio: audio, 
+        playbackObject: playbackObject, 
+        soundObject: status,
+        isPlaying: true,
+        currentAudioIndex: index,
+      });
     }
 
+    //pause
     if (soundObject.isLoaded && soundObject.isPlaying && currentAudio.id === audio.id){
-      // console.log("Audio is playing");
       const status = await pauseFunc(playbackObject);
-      return updateState(this.context, {soundObject: status});
-      // return this.setState({...this.state, soundObject: status});
+      return updateState(this.context, {
+        soundObject: status, 
+        isPlaying: false,
+      });
     }
-    // this.state.soundObject.didJustFinish this.state.currentAudio.id === audio.id
+
+    //resume
     if (soundObject.isLoaded && !soundObject.isPlaying && currentAudio.id === audio.id) {
       const status = await resumeFunc(playbackObject);
-      return updateState(this.context, {soundObject: status});
-      // return this.setState({...this.state, soundObject: status});
+      return updateState(this.context, {soundObject: status, isPlaying: true,});
     } 
 
+    //play next one
     if (soundObject.isLoaded && currentAudio.id !== audio.id) {
+      const index = audioFiles.indexOf(audio);
       const status = await playNextFunc(playbackObject, audio.uri);
-      return updateState(this.context, {currentAudio: audio, soundObject: status});
+      return updateState(this.context, {
+        currentAudio: audio, 
+        soundObject: status, 
+        isPlaying: true,
+        currentAudioIndex: index,
+      });
     }
   }
 
-  rowRenderer = (type, item) => {
+  rowRenderer = (type, item, index, extendedState) => {
+    // console.log(extendedState);
     return (
       <MusicCard 
         title={item.filename} 
         duration = {item.duration} 
         onAudioPress={() => {this.handleAudioPress(item)}}
         menuPress = {() => {console.log("Option is opening")}}
-
+        isPlaying={extendedState.isPlaying}
+        activeMusicCard={this.context.currentAudioIndex === index}
       />
     )
   };
 
+
   render() {
     return (
           <AudioContext.Consumer>
-            {({dataProvider}) => {
+            {({dataProvider, isPlaying}) => {
               return (
                 <SafeAreaView className = "flex-1 bg-primary">
                     <View className = "w-[96%] self-center flex-1 flex-col justify-normal">
@@ -123,7 +130,13 @@ export class Music extends Component {
                             libName = {"MaterialIcons"}
                           />
                           <CustomIconButton
-                            handlePress = {() => {}}
+                            handlePress = {() => {
+                              const { updateState, refreshAudioFiles } = this.context;
+                              // updateState(this.context, { audioFiles: [], dataProvider: new DataProvider((f, s) => f !== s) });
+                              
+                              refreshAudioFiles();
+                              updateState();
+                            }}
                             containerStyles = "my-3 px-3"
                             iconName = "refresh"
                             iconSize = {24}
@@ -137,6 +150,7 @@ export class Music extends Component {
                           dataProvider={dataProvider} 
                           layoutProvider={this.layoutProvider} 
                           rowRenderer={this.rowRenderer}
+                          extendedState={{isPlaying}}
                         />
                         
                       </View>

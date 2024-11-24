@@ -6,9 +6,26 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 // const convertTime = minutes => {
 //   return minutes;
-// }
+// }PlayPause
 
-const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuPress, onAudioPress }) => {
+
+const renderPlayPauseIcon = isPlaying => {
+  if (isPlaying) {
+    return (
+      <MaterialCommunityIcons name="pause" size={24} color="white" />
+    )
+  } else {
+    return (
+      <MaterialCommunityIcons name="play" size={24} color="white" />
+    )
+  }
+} 
+
+const getMusicThumb = () => {
+  return <MaterialCommunityIcons name="music" size={24} color="white" />
+}
+
+const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuPress, onAudioPress, isPlaying, activeMusicCard }) => {
   return (
     <>
       <View className = "flex-row self-center items-center border-tertiary border-solid border-b-2 py-1">
@@ -16,7 +33,7 @@ const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuP
           <View className = "flex-row w-[85%]">
             <View className= "self-center p-2 mr-1 rounded-md border-secondary border-solid border-2">
               <View >
-                <MaterialCommunityIcons name="music" size={24} color="white" />
+                {activeMusicCard ? renderPlayPauseIcon(isPlaying) : getMusicThumb()}
               </View>
             </View>
             <View className = "flex-col flex-1">

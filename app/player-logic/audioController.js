@@ -49,3 +49,4 @@ export const playNextFunc = async (playbackObject, uri) => {
         console.log("Error in playNext-func of the audioController", error.message);
     }
 }
+
