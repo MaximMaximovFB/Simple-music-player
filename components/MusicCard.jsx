@@ -19,13 +19,17 @@ const renderPlayPauseIcon = isPlaying => {
       <MaterialCommunityIcons name="play" size={24} color="white" />
     )
   }
-} 
+}
 
 const getMusicThumb = () => {
   return <MaterialCommunityIcons name="music" size={24} color="white" />
 }
 
-const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuPress, onAudioPress, isPlaying, activeMusicCard }) => {
+const createMenuButton = () => {
+  return 
+}
+
+const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuPress, menuIsVisible, onAudioPress, isPlaying, activeMusicCard }) => {
   return (
     <>
       <View className = "flex-row self-center items-center border-tertiary border-solid border-b-2 py-1">
@@ -42,7 +46,7 @@ const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuP
             </View>
           </View>
         </TouchableWithoutFeedback>
-        <View className = "flex-1 pt-4">
+        <View className = "flex-1 items-center justify-end">
           <CustomIconButton
             handlePress= {menuPress}
             iconName={"dots-vertical"}

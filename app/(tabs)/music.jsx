@@ -13,6 +13,7 @@ import CustomIconButton from '../../components/CustomIconButton'
 import SearchInput from '../../components/SearchInput'
 import MusicCard from '../../components/MusicCard'
 import Menu from '../../components/Menu';
+import MicroPlayer from '../../components/MicroPlayer';
 
 import {AudioContext} from '../../context/AudioProvider';
 import {playFunc, pauseFunc, resumeFunc, playNextFunc} from '../player-logic/audioController'
@@ -101,6 +102,7 @@ export class Music extends Component {
   };
 
 
+
   render() {
     return (
           <AudioContext.Consumer>
@@ -112,7 +114,7 @@ export class Music extends Component {
                         <View className="mt-2">
                           <SearchInput/>
                         </View>
-                        <View className="flex-1 flex-row justify-around mb-12">
+                        <View className="flex-row justify-around h-[6vh]">
                           <CustomIconButton
                             handlePress = {() => {}}
                             containerStyles = "my-3 px-3"
@@ -151,16 +153,35 @@ export class Music extends Component {
                           layoutProvider={this.layoutProvider} 
                           rowRenderer={this.rowRenderer}
                           extendedState={{isPlaying}}
+                          // renderFooter = {() => {
+                          //   return (
+                          //     //"Loading"-elemnt
+                          //   );
+                          // }
+                          // }
                         />
                         
                       </View>
                     </View>
-                    <Menu
-                          visible={true}
-                    />
+                    <View className="self-center w-[98%] border-t-2 border-solid border-secondary">
+                      <MicroPlayer
+                        title={this.context.currentAudio.filename || "Find your track"} 
+                        duration = {this.context.currentAudio.duration || "00"}
+                        onAudioPress={() => router.push('../(seps)/player')}
+                        menuPress = {() => {}}
+                        isPlaying={this.context.isPlaying}
+                        activeMusicCard={() => {}}
+                        prevBtn={() => {}}
+                        nextBtn={() => {}}
+                        pauseBtn={() => this.handleAudioPress(this.context.currentAudio)}
+                        // this.handleAudioPress(item)
+                      />
+         
+                    </View>
                 </SafeAreaView>
                 )
             }}
+
           </AudioContext.Consumer>
     );
   }
