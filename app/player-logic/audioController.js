@@ -8,15 +8,13 @@
     //   "uri": "/storage/emulated/0/Download/Poor_Mans_Poison_-_Hells_Comin_with_Me_(musmore.com).mp3", 
     //   "volume": 1} 
 
-
 //play
 export const playFunc = async (playbackObject, uri) => {
     try {
-        return await playbackObject.loadAsync({uri}, {shouldPlay: true});
+        return await playbackObject.loadAsync({ uri }, {shouldPlay: true});
     } catch (error) {
         console.log("Error in play-func of the audioController", error.message);
     }
-    // console.log(status);
 }
 
 //pause
@@ -26,7 +24,6 @@ export const pauseFunc = async (playbackObject) => {
     } catch (error) {
         console.log("Error in pause-func of the audioController", error.message);
     }
-    // console.log(status);
 }
 //resume
 export const resumeFunc = async (playbackObject) => {
@@ -35,7 +32,6 @@ export const resumeFunc = async (playbackObject) => {
     } catch (error) {
         console.log("Error in resume-func of the audioController", error.message);
     }
-    // console.log(status);
 }
 
 //select another
@@ -48,5 +44,7 @@ export const playNextFunc = async (playbackObject, uri) => {
     } catch (error) {
         console.log("Error in playNext-func of the audioController", error.message);
     }
-}
+};
+
+
 

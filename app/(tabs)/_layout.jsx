@@ -1,7 +1,6 @@
-import { Text, View, Image } from 'react-native'
-import React, { useEffect } from 'react'
-import { SplashScreen, Stack, Tabs, Redirect} from 'expo-router'
-import {useFonts} from "expo-font";
+import { Text, View } from 'react-native'
+import React from 'react'
+import { Tabs } from 'expo-router'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import {AudioProvider} from '../../context/AudioProvider'  
@@ -40,7 +39,7 @@ const TabsLayout = () => {
         }}
         >
         <Tabs.Screen
-            name = "music"
+            name = "index"
             options={{
             title: "Music",
             headerShown: false,

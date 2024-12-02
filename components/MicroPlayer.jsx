@@ -40,7 +40,7 @@ const renderPlayPauseIcon = (isPlaying, pauseBtn) => {
 // }
 
 
-const MicroPlayer = ({ title, thumbnail, soundtrack, creator, key, duration, menuPress, menuIsVisible, onAudioPress, isPlaying, activeMusicCard, pauseBtn, nextBtn, prevBtn }) => {
+const MicroPlayer = ({ title, duration, menuPress, menuIsVisible, onAudioPress, isPlaying, pauseBtn, nextBtn, prevBtn }) => {
   return (
     <>
       <View className = "flex-row my-2 justify-between h-[6vh]">

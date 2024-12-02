@@ -1,10 +1,7 @@
-import { Text, View } from 'react-native'
 import React, { useEffect } from 'react'
 import { SplashScreen, Stack } from 'expo-router'
 import {useFonts} from "expo-font";
-
-// import AudioProvider from '../context/AudioProvider'   
-
+ 
 import "../global.css";
 
 SplashScreen.preventAutoHideAsync();
@@ -32,7 +29,6 @@ const RootLayout = () => {
 
 
   return (
-    // <AudioProvider>
       <Stack>
         <Stack.Screen 
           name="index"
@@ -43,8 +39,6 @@ const RootLayout = () => {
           options={{ headerShown: false}}
         />
       </Stack>
-    // </AudioProvider>
-    
   )
 }
 

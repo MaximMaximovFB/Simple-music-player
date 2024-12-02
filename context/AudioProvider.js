@@ -3,18 +3,31 @@ import React, { Component, createContext } from 'react';
 import * as MediaLibrary from 'expo-media-library';
 import { DataProvider } from 'recyclerlistview';
 import * as FileSystem from 'expo-file-system';
+import AsyncStorage from '@react-native-async-storage/async-storage';
  
 
 export const AudioContext = createContext();
 
-
 const AUDIO_FILE = `${FileSystem.documentDirectory}audioFiles.json`;
 
-
-
-
-
 export class AudioProvider extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            audioFiles: [],
+            permissionError: false,
+            dataProvider: new DataProvider((firstRule,secondRule) => firstRule !== secondRule),
+            playbackObject: null,
+            soundObject: null,
+            currentAudio: {},
+            isPlaying: false,
+            currentAudioIndex: null,
+            playbackPosition: null,
+            playbackDuration: null,
+        };
+        this.totalAudioCount = 0;
+    }
 
     loadFromJSON = async () => {
         try {
@@ -23,10 +36,13 @@ export class AudioProvider extends Component {
                 const json = await FileSystem.readAsStringAsync(AUDIO_FILE);
                 const audioFiles = JSON.parse(json);
                 console.log("Loaded audio files from JSON");
+                this.totalAudioCount = audioFiles.length;
                 this.setState({
                     audioFiles,
+                    totalAudioCount: audioFiles.length,
                     dataProvider: this.state.dataProvider.cloneWithRows(audioFiles),
                 });
+                console.log(`${this.totalAudioCount} audio files has been loaded from JSON file.`);
             } else {
                 console.log("JSON file not found, scanning memory...");
                 await this.getAudioFiles();
@@ -44,20 +60,6 @@ export class AudioProvider extends Component {
             console.error("Error saving audio files:", error);
         }
     };
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            audioFiles: [],
-            permissionError: false,
-            dataProvider: new DataProvider((firstRule,secondRule) => firstRule !== secondRule),
-            playbackObject: null,
-            soundObject: null,
-            currentAudio: {},
-            isPlaying: false,
-            currentAudioIndex: null,
-        };
-    }
 
     permissionAlert = () => {
         Alert.alert(
@@ -79,9 +81,13 @@ export class AudioProvider extends Component {
             mediaType: 'audio', 
             first: media.totalCount,
         });
+
+        this.totalAudioCount = media.totalCount
         // console.log(media.assets.length);
         //  console.log(media);
+       
         console.log("Memory has been scanned");
+        console.log(`${media.totalCount} audio files were found.`);
         this.saveToJSON(media.assets);
         this.setState({
             ...this.state, 
@@ -125,6 +131,23 @@ export class AudioProvider extends Component {
         }
     };
 
+    loadPreviousAudio = async () => {
+        let previousAudio = await AsyncStorage.getItem('previousAudio');
+        let currentAudio;
+        let currentAudioIndex;
+
+        if (previousAudio === null) {
+            currentAudio = this.state.audioFiles[0];
+            currentAudioIndex = 0;
+        } else {
+            previousAudio = JSON.parse(previousAudio);
+            currentAudio = previousAudio.audio;
+            currentAudioIndex = previousAudio.index;
+        }
+
+        this.setState({...this.state, currentAudio, currentAudioIndex});
+    }
+
     componentDidMount(){
         this.getPermission();
     }
@@ -143,6 +166,8 @@ export class AudioProvider extends Component {
             currentAudio, 
             isPlaying,
             currentAudioIndex,
+            playbackPosition,
+            playbackDuration,
         } = this.state;
         if (permissionError) {
             return (
@@ -162,8 +187,12 @@ export class AudioProvider extends Component {
             currentAudio, 
             isPlaying, 
             currentAudioIndex, 
+            playbackPosition,
+            playbackDuration,
+            totalAudioCount: this.totalAudioCount,
             updateState: this.updateState, 
             refreshAudioFiles: this.getAudioFiles, // Expose refresh method
+            loadPreviousAudio: this.loadPreviousAudio,
             }}>
             {this.props.children}
         </AudioContext.Provider>

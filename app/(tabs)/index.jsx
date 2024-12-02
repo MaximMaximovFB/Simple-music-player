@@ -1,22 +1,19 @@
-import { Alert, FlatList, Text, View, PermissionsAndroid, ScrollView, Dimensions, RefreshControl } from 'react-native'
-import React, { useCallback, useState, Component } from 'react'
-import { Link, router } from 'expo-router';
+import { View, Dimensions } from 'react-native'
+import React, { Component } from 'react'
+import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
 
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { LayoutProvider, RecyclerListView } from 'recyclerlistview';
 import { Audio } from 'expo-av';
 
-import CustomButton from '../../components/CustomButton'
 import CustomIconButton from '../../components/CustomIconButton'
 import SearchInput from '../../components/SearchInput'
 import MusicCard from '../../components/MusicCard'
-import Menu from '../../components/Menu';
 import MicroPlayer from '../../components/MicroPlayer';
 
 import {AudioContext} from '../../context/AudioProvider';
 import {playFunc, pauseFunc, resumeFunc, playNextFunc} from '../player-logic/audioController'
+import {storeAudioForNextOpening} from '../user-config/helper';
 
 export class Music extends Component {
 
@@ -25,7 +22,7 @@ export class Music extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      // optionModalVisible: false,
+      firstLaunch: true,
     }
   }
 
@@ -41,6 +38,53 @@ export class Music extends Component {
     }
   });
 
+  onPlaybackStatusUpdate = async playbackStatus => {
+
+    if (playbackStatus.isLoaded && playbackStatus.isPlaying) {
+      this.context.updateState(this.context, {
+        playbackPosition: playbackStatus.positionMillis,
+        playbackDuration: playbackStatus.durationMillis,                                  
+      });
+    }
+
+    // console.log(playbackStatus); 
+
+    if (playbackStatus.didJustFinish) {
+      
+      console.log("Audio file did just finish"); 
+      
+      const nextAudioIndex = this.context.currentAudioIndex + 1;
+      console.log(`nextAudioIndex: ${nextAudioIndex}`);
+      
+      if ( nextAudioIndex >= this.context.totalAudioCount) {r
+
+        console.log("Reached the end of the audio file queue");
+
+        this.context.playbackObject.unloadAsync();
+        this.context.updateState(this.context, {
+          currentAudio: this.context.audioFiles[0], 
+          soundObject: null, 
+          isPlaying: false,
+          currentAudioIndex: 0,
+          playbackPosition: null,
+          playbackDuration: null
+        });  
+        return await storeAudioForNextOpening(this.context.audioFiles[0], 0);
+      }
+
+      const audio = this.context.audioFiles[nextAudioIndex];
+      const status = await playNextFunc(this.context.playbackObject, audio.uri);
+      
+      this.context.updateState(this.context, { 
+        currentAudio: audio, 
+        soundObject: status, 
+        isPlaying: true,
+        currentAudioIndex: nextAudioIndex,
+      });
+      await storeAudioForNextOpening(audio, nextAudioIndex);
+    }
+  }
+
   handleAudioPress = async (audio) => {
     const {playbackObject, soundObject, currentAudio, updateState, audioFiles} = this.context;
 
@@ -50,13 +94,16 @@ export class Music extends Component {
       const playbackObject = new Audio.Sound();
       const status = await playFunc(playbackObject, audio.uri);
       const index = audioFiles.indexOf(audio);
-      return updateState(this.context, {
+      updateState(this.context, {
         currentAudio: audio, 
         playbackObject: playbackObject, 
         soundObject: status,
         isPlaying: true,
         currentAudioIndex: index,
+        firstLaunch: false
       });
+      playbackObject.setOnPlaybackStatusUpdate(this.onPlaybackStatusUpdate);
+      return storeAudioForNextOpening(audio, index);
     }
 
     //pause
@@ -74,17 +121,89 @@ export class Music extends Component {
       return updateState(this.context, {soundObject: status, isPlaying: true,});
     } 
 
-    //play next one
+    //play the next one
     if (soundObject.isLoaded && currentAudio.id !== audio.id) {
       const index = audioFiles.indexOf(audio);
       const status = await playNextFunc(playbackObject, audio.uri);
-      return updateState(this.context, {
+      updateState(this.context, {
         currentAudio: audio, 
         soundObject: status, 
         isPlaying: true,
         currentAudioIndex: index,
       });
+      return storeAudioForNextOpening(audio, index);
     }
+  };
+
+  handleNext = async () => {
+    const { playbackObject, currentAudioIndex, audioFiles, updateState, totalAudioCount } = this.context;
+
+    try {
+
+        let playback = playbackObject;
+        if (!playback) {
+            playback = new Audio.Sound();
+            updateState(this.context, { playbackObject: playback });
+        }
+
+        const isLastAudio = currentAudioIndex + 1 === totalAudioCount;
+        const nextAudioIndex = isLastAudio ? 0 : currentAudioIndex + 1;
+        const nextAudio = audioFiles[nextAudioIndex];
+
+        const { isLoaded } = await playback.getStatusAsync();
+
+        const status = isLoaded ? await playNextFunc(playback, nextAudio.uri) : await playFunc(playback, nextAudio.uri);
+
+        updateState(this.context, {
+            currentAudio: nextAudio,
+            soundObject: status,
+            isPlaying: true,
+            currentAudioIndex: nextAudioIndex,
+        });
+
+        await storeAudioForNextOpening(nextAudio, nextAudioIndex);
+    } catch (error) {
+        console.error("Error in handleNext:", error);
+    }
+};
+
+handlePrevious = async () => {
+  const { playbackObject, currentAudioIndex, audioFiles, updateState, totalAudioCount } = this.context;
+
+  try {
+
+      let playback = playbackObject;
+      if (!playback) {
+          playback = new Audio.Sound();
+          updateState(this.context, { playbackObject: playback });
+      }
+
+      const isFirstAudio = currentAudioIndex <= 0;
+      const nextAudioIndex = isFirstAudio ? totalAudioCount-1 : currentAudioIndex - 1;
+      const nextAudio = audioFiles[nextAudioIndex];
+
+      const { isLoaded } = await playback.getStatusAsync();
+
+      const status = isLoaded ? await playNextFunc(playback, nextAudio.uri) : await playFunc(playback, nextAudio.uri);
+
+      updateState(this.context, {
+          currentAudio: nextAudio,
+          soundObject: status,
+          isPlaying: true,
+          currentAudioIndex: nextAudioIndex,
+      });
+
+      await storeAudioForNextOpening(nextAudio, nextAudioIndex);
+  } catch (error) {
+      console.error("Error in handleNext:", error);
+  }
+};
+
+
+
+
+  componentDidMount() {
+    this.context.loadPreviousAudio();
   }
 
   rowRenderer = (type, item, index, extendedState) => {
@@ -101,12 +220,11 @@ export class Music extends Component {
     )
   };
 
-
-
   render() {
     return (
           <AudioContext.Consumer>
             {({dataProvider, isPlaying}) => {
+              if (!dataProvider._data.length) return null;
               return (
                 <SafeAreaView className = "flex-1 bg-primary">
                     <View className = "w-[96%] self-center flex-1 flex-col justify-normal">
@@ -123,19 +241,17 @@ export class Music extends Component {
                             iconColor = "white"
                             libName = {"MaterialIcons"}
                           />
-                          <CustomIconButton
+                          {/* <CustomIconButton
                             handlePress = {() => {}}
                             containerStyles = "my-3 px-3"
                             iconName = "add-box"
                             iconSize = {24}
                             iconColor = "white"
                             libName = {"MaterialIcons"}
-                          />
+                          /> */}
                           <CustomIconButton
                             handlePress = {() => {
                               const { updateState, refreshAudioFiles } = this.context;
-                              // updateState(this.context, { audioFiles: [], dataProvider: new DataProvider((f, s) => f !== s) });
-                              
                               refreshAudioFiles();
                               updateState();
                             }}
@@ -153,30 +269,25 @@ export class Music extends Component {
                           layoutProvider={this.layoutProvider} 
                           rowRenderer={this.rowRenderer}
                           extendedState={{isPlaying}}
-                          // renderFooter = {() => {
-                          //   return (
-                          //     //"Loading"-elemnt
-                          //   );
-                          // }
-                          // }
                         />
                         
                       </View>
                     </View>
-                    <View className="self-center w-[98%] border-t-2 border-solid border-secondary">
-                      <MicroPlayer
-                        title={this.context.currentAudio.filename || "Find your track"} 
-                        duration = {this.context.currentAudio.duration || "00"}
-                        onAudioPress={() => router.push('../(seps)/player')}
-                        menuPress = {() => {}}
-                        isPlaying={this.context.isPlaying}
-                        activeMusicCard={() => {}}
-                        prevBtn={() => {}}
-                        nextBtn={() => {}}
-                        pauseBtn={() => this.handleAudioPress(this.context.currentAudio)}
-                        // this.handleAudioPress(item)
-                      />
-         
+                    <View className="self-center w-full border-t-2 border-solid border-secondary">
+                      <View className = "w-[96%] self-center">
+                        <MicroPlayer
+                          isFirstLaunch = {() => {this.context.firstLaunch}}
+                          title={this.context.currentAudio.filename || "Hey, wanna listen "} 
+                          duration = {this.context.currentAudio.duration || "to some tunes?_"}
+                          onAudioPress={() => router.push('../(seps)/player')}
+                          menuPress = {() => {}}
+                          isPlaying={this.context.isPlaying}
+                          activeMusicCard={() => {}}
+                          prevBtn={this.handlePrevious}
+                          nextBtn={this.handleNext}
+                          pauseBtn={() => this.handleAudioPress(this.context.currentAudio)}
+                        />
+                      </View>
                     </View>
                 </SafeAreaView>
                 )
@@ -188,53 +299,3 @@ export class Music extends Component {
 }
 
 export default Music
-
-{/* <SafeAreaView className="h-full bg-primary">
-        <View className="w-[96%] self-center flex-1 flex-col justify-normal ">
-          <View className="flex-col ">
-            <View className="mt-2">
-              <SearchInput/>
-            </View>
-            <View className="flex-1 flex-row justify-around mb-12">
-              <CustomIconButton
-                handlePress = {() => {}}
-                containerStyles = "my-3 px-3"
-                iconName = "play-circle-fill"
-                iconSize = {24}
-                iconColor = "white"
-              />
-              <CustomIconButton
-                handlePress = {() => {}}
-                containerStyles = "my-3 px-3"
-                iconName = "add-box"
-                iconSize = {24}
-                iconColor = "white"
-              />
-              <CustomIconButton
-                handlePress = {() => {}}
-                containerStyles = "my-3 px-3"
-                iconName = "refresh"
-                iconSize = {24}
-                iconColor = "white"
-              />                       
-            </View>
-          </View>
-        <View>
-          <AudioContext.Consumer>
-            {(dataProvider) => {
-              return <RecyclerListView className="flex-1" dataProvider={dataProvider} layoutProvider={this.layoutProvider} rowRenderer={this.rowRenderer}/>
-            }}
-          </AudioContext.Consumer>
-        </View>
-      </View>
-    </SafeAreaView> */}
-
-//           <ScrollView className="border-t-2 border-white focus:border-secondary"> 
-//           {this.context.audioFiles?.length > 0 ? (
-//           this.context.audioFiles.map(item => (
-//             <Text key={item.id} className="text-white font-scLight">{item.filename}</Text>
-//           ))
-//           ) : (
-//             <Text className="text-white font-scLight">No audio files found</Text>
-//           )}
-// </ScrollView>
