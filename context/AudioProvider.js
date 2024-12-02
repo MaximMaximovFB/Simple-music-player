@@ -15,20 +15,21 @@ export class AudioProvider extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            audioFiles: [],
-            permissionError: false,
-            dataProvider: new DataProvider((firstRule,secondRule) => firstRule !== secondRule),
-            playbackObject: null,
-            soundObject: null,
-            currentAudio: {},
-            isPlaying: false,
-            currentAudioIndex: null,
-            playbackPosition: null,
-            playbackDuration: null,
+            audioFiles: [], // Массив аудиофайлов
+            permissionError: false, // Флаг для ошибки разрешений
+            dataProvider: new DataProvider((firstRule, secondRule) => firstRule !== secondRule), // Провайдер данных для RecyclerListView
+            playbackObject: null, // Объект воспроизведения
+            soundObject: null, // Текущий аудиофайл
+            currentAudio: {}, // Данные текущего воспроизводимого трека
+            isPlaying: false, // Флаг воспроизведения
+            currentAudioIndex: null, // Индекс текущего трека
+            playbackPosition: null, // Текущая позиция воспроизведения
+            playbackDuration: null, // Длительность трека
         };
-        this.totalAudioCount = 0;
+        this.totalAudioCount = 0; // Количество всех загруженых треков
     }
 
+    // Загрузка аудиофайлов из JSON-файла
     loadFromJSON = async () => {
         try {
             const fileExists = await FileSystem.getInfoAsync(AUDIO_FILE);
@@ -52,6 +53,8 @@ export class AudioProvider extends Component {
         }
     };
 
+    
+    // Сохранение аудиофайлов в JSON-файл
     saveToJSON = async (audioFiles) => {
         try {
             await FileSystem.writeAsStringAsync(AUDIO_FILE, JSON.stringify(audioFiles));
@@ -61,6 +64,7 @@ export class AudioProvider extends Component {
         }
     };
 
+    // Уведомление о необходимости разрешений
     permissionAlert = () => {
         Alert.alert(
             "Permission required", 
@@ -72,6 +76,7 @@ export class AudioProvider extends Component {
         )
     }
 
+    // Сканирование памяти устройства для поиска аудиофайлов
     getAudioFiles = async () => {
         const {dataProvider, audioFiles} = this.state
         let media = await MediaLibrary.getAssetsAsync({
@@ -96,6 +101,7 @@ export class AudioProvider extends Component {
             })
     }
 
+    // Получение разрешений на чтение от пользователя
     getPermission = async () => {
         // {
         //     "accessPrivileges": "none", 
@@ -106,7 +112,6 @@ export class AudioProvider extends Component {
         const permission = await MediaLibrary.getPermissionsAsync();
         // console.log(permission);
         if (permission.granted) {
-            // this.getAudioFiles();
             await this.loadFromJSON(); // Load data from JSON or scan memory
         }
 
@@ -120,17 +125,16 @@ export class AudioProvider extends Component {
                 this.permissionAlert();
             }
             if (status==='granted') {
-                // this.getAudioFiles();
                 await this.loadFromJSON();
             }
 
             if (status==='denied' && !canAskAgain) {
-                //error
                 this.setState({...this.state, permissionError: true})
             }
         }
     };
 
+    // Загрузка трека, который проигрывался перед последним завершение рбаоты приложения.
     loadPreviousAudio = async () => {
         let previousAudio = await AsyncStorage.getItem('previousAudio');
         let currentAudio;
@@ -148,10 +152,12 @@ export class AudioProvider extends Component {
         this.setState({...this.state, currentAudio, currentAudioIndex});
     }
 
+
     componentDidMount(){
         this.getPermission();
     }
     
+    // Обновление состояния аудиоплеера
     updateState = (previousState, newState = {}) => {
         this.setState({...previousState, ...newState});
     }
@@ -169,6 +175,8 @@ export class AudioProvider extends Component {
             playbackPosition,
             playbackDuration,
         } = this.state;
+
+        // Если разрешения на чтение не предоставлены
         if (permissionError) {
             return (
                 <View className="flex-1 justify-center items-center">
@@ -178,6 +186,8 @@ export class AudioProvider extends Component {
                 </View>
             );
         } 
+
+        // контекст для других компонентов
         return (
         <AudioContext.Provider value={{ 
             audioFiles, 

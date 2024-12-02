@@ -22,11 +22,13 @@ export class Music extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      firstLaunch: true,
+      firstLaunch: true,  // Флаг для определения первого запуска
     }
   }
 
-  layoutProvider = new LayoutProvider((i) => 'audio', (type, dimension) => {
+
+  // Размер каждого элемента списка RecyclerListView
+  layoutProvider = new LayoutProvider((i) => 'audio', (type, dimension) => {    
     switch (type){
       case 'audio':
         dimension.width = Dimensions.get('window').width;
@@ -38,6 +40,7 @@ export class Music extends Component {
     }
   });
 
+  // Обновление состояния воспроизведения аудио
   onPlaybackStatusUpdate = async playbackStatus => {
 
     if (playbackStatus.isLoaded && playbackStatus.isPlaying) {
@@ -47,15 +50,16 @@ export class Music extends Component {
       });
     }
 
-    // console.log(playbackStatus); 
-
+     // если текущий завершён, переход к следующему треку, 
     if (playbackStatus.didJustFinish) {
       
       console.log("Audio file did just finish"); 
       
       const nextAudioIndex = this.context.currentAudioIndex + 1;
+
       console.log(`nextAudioIndex: ${nextAudioIndex}`);
-      
+
+      // Если очередь воспроизведения закончилась, вернуться к первому треку
       if ( nextAudioIndex >= this.context.totalAudioCount) {r
 
         console.log("Reached the end of the audio file queue");
@@ -81,14 +85,17 @@ export class Music extends Component {
         isPlaying: true,
         currentAudioIndex: nextAudioIndex,
       });
+
       await storeAudioForNextOpening(audio, nextAudioIndex);
+
     }
   }
 
+  // Управление воспроизведением: воспроизведение, пауза, продолжение, переключение
   handleAudioPress = async (audio) => {
     const {playbackObject, soundObject, currentAudio, updateState, audioFiles} = this.context;
 
-    //first time play
+    // Если трек воспроизводится впервые
     if (soundObject === null) {
       
       const playbackObject = new Audio.Sound();
@@ -106,7 +113,7 @@ export class Music extends Component {
       return storeAudioForNextOpening(audio, index);
     }
 
-    //pause
+    // Пауза
     if (soundObject.isLoaded && soundObject.isPlaying && currentAudio.id === audio.id){
       const status = await pauseFunc(playbackObject);
       return updateState(this.context, {
@@ -115,13 +122,13 @@ export class Music extends Component {
       });
     }
 
-    //resume
+    // Продолжение воспроизведения
     if (soundObject.isLoaded && !soundObject.isPlaying && currentAudio.id === audio.id) {
       const status = await resumeFunc(playbackObject);
       return updateState(this.context, {soundObject: status, isPlaying: true,});
     } 
 
-    //play the next one
+    // Воспроизведение нового трека
     if (soundObject.isLoaded && currentAudio.id !== audio.id) {
       const index = audioFiles.indexOf(audio);
       const status = await playNextFunc(playbackObject, audio.uri);
@@ -135,6 +142,7 @@ export class Music extends Component {
     }
   };
 
+  // Переход к следующему треку в очереди
   handleNext = async () => {
     const { playbackObject, currentAudioIndex, audioFiles, updateState, totalAudioCount } = this.context;
 
@@ -165,47 +173,47 @@ export class Music extends Component {
     } catch (error) {
         console.error("Error in handleNext:", error);
     }
-};
+  };
 
-handlePrevious = async () => {
-  const { playbackObject, currentAudioIndex, audioFiles, updateState, totalAudioCount } = this.context;
+  // Переход к предыдущему треку в очереди
+  handlePrevious = async () => {
+    const { playbackObject, currentAudioIndex, audioFiles, updateState, totalAudioCount } = this.context;
 
-  try {
+    try {
 
-      let playback = playbackObject;
-      if (!playback) {
-          playback = new Audio.Sound();
-          updateState(this.context, { playbackObject: playback });
-      }
+        let playback = playbackObject;
+        if (!playback) {
+            playback = new Audio.Sound();
+            updateState(this.context, { playbackObject: playback });
+        }
 
-      const isFirstAudio = currentAudioIndex <= 0;
-      const nextAudioIndex = isFirstAudio ? totalAudioCount-1 : currentAudioIndex - 1;
-      const nextAudio = audioFiles[nextAudioIndex];
+        const isFirstAudio = currentAudioIndex <= 0;
+        const nextAudioIndex = isFirstAudio ? totalAudioCount-1 : currentAudioIndex - 1;
+        const nextAudio = audioFiles[nextAudioIndex];
 
-      const { isLoaded } = await playback.getStatusAsync();
+        const { isLoaded } = await playback.getStatusAsync();
 
-      const status = isLoaded ? await playNextFunc(playback, nextAudio.uri) : await playFunc(playback, nextAudio.uri);
+        const status = isLoaded ? await playNextFunc(playback, nextAudio.uri) : await playFunc(playback, nextAudio.uri);
 
-      updateState(this.context, {
-          currentAudio: nextAudio,
-          soundObject: status,
-          isPlaying: true,
-          currentAudioIndex: nextAudioIndex,
-      });
+        updateState(this.context, {
+            currentAudio: nextAudio,
+            soundObject: status,
+            isPlaying: true,
+            currentAudioIndex: nextAudioIndex,
+        });
 
-      await storeAudioForNextOpening(nextAudio, nextAudioIndex);
-  } catch (error) {
-      console.error("Error in handleNext:", error);
-  }
-};
+        await storeAudioForNextOpening(nextAudio, nextAudioIndex);
+    } catch (error) {
+        console.error("Error in handleNext:", error);
+    }
+  };
 
-
-
-
+  // Загрузка последнего воспроизведённого трека
   componentDidMount() {
     this.context.loadPreviousAudio();
   }
 
+  // Отображение элементов RecyclerListView 
   rowRenderer = (type, item, index, extendedState) => {
     // console.log(extendedState);
     return (
