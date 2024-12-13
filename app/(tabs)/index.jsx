@@ -294,7 +294,8 @@ export class Music extends Component {
                     <View className="self-center w-full border-t-2 border-solid border-secondary">
                       <View className = "w-[96%] self-center">
                       {/* При первом запуске клона проекта с гитхаба, выкидывает ошибку TypeError: Cannot read property 'filename' of undefined
-                      Связано это исключительно с Микроплеером. Но если его закомментить запустить приложение, а потом раскоментить, то всё будет работать нормальноЙ */}
+                      Связано это исключительно с Микроплеером. Но если его закомментить запустить приложение, а потом раскоментить, то всё будет работать нормально. 
+                      Я добавил .? для проблемных элементов. Если этой проблемы не возникнет в дальнейшем, то заметку убрать!!!*/}
                         <MicroPlayer
                           isFirstLaunch = {() => {this.context.firstLaunch}}
                           title={this.context.currentAudio?.filename || "Hey, wanna listen "} 
