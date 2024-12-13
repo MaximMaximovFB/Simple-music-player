@@ -1,12 +1,16 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import { Stack } from 'expo-router'
 
-const sepsLayout = () => {
+const SepsLayout = () => {
   return (
-    <View>
-      <Text>sepsLayout</Text>
-    </View>
+    <Stack>
+        <Stack.Screen 
+          name="player"
+          options={{ headerShown: false}}
+        />      
+    </Stack>
   )
 }
 
-export default sepsLayout
+export default SepsLayout
