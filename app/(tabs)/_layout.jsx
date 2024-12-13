@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native'
 import React from 'react'
-import { Tabs } from 'expo-router'
+import { Stack, Tabs } from 'expo-router'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 import {AudioProvider} from '../../context/AudioProvider'  

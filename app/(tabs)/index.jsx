@@ -1,4 +1,4 @@
-import { View, Dimensions } from 'react-native'
+import { View, Dimensions, Text } from 'react-native'
 import React, { Component } from 'react'
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -216,6 +216,14 @@ export class Music extends Component {
   // Отображение элементов RecyclerListView 
   rowRenderer = (type, item, index, extendedState) => {
     // console.log(extendedState);
+    if (!item || !item.filename || !item.duration) {
+      // Или заглушка, если данные ещё загружаются
+      return (
+        <View style={{ height: 70, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Loading...</Text>
+        </View>
+      ); 
+    }
     return (
       <MusicCard 
         title={item.filename} 
@@ -232,8 +240,10 @@ export class Music extends Component {
     return (
           <AudioContext.Consumer>
             {({dataProvider, isPlaying}) => {
-              if (!dataProvider._data.length) return null;
-              return (
+              if (!dataProvider || !dataProvider._data || dataProvider._data.length === 0) {
+                return <Text>No audio files available</Text>;
+              } else {
+                return (
                 <SafeAreaView className = "flex-1 bg-primary">
                     <View className = "w-[96%] self-center flex-1 flex-col justify-normal">
                       <View className="flex-col ">
@@ -283,10 +293,13 @@ export class Music extends Component {
                     </View>
                     <View className="self-center w-full border-t-2 border-solid border-secondary">
                       <View className = "w-[96%] self-center">
+                      {/* При первом запуске клона проекта с гитхаба, выкидывает ошибку TypeError: Cannot read property 'filename' of undefined
+                      Связано это исключительно с Микроплеером. Но если его закомментить запустить приложение, а потом раскоментить, то всё будет работать нормально. 
+                      Я добавил .? для проблемных элементов. Если этой проблемы не возникнет в дальнейшем, то заметку убрать!!!*/}
                         <MicroPlayer
                           isFirstLaunch = {() => {this.context.firstLaunch}}
-                          title={this.context.currentAudio.filename || "Hey, wanna listen "} 
-                          duration = {this.context.currentAudio.duration || "to some tunes?_"}
+                          title={this.context.currentAudio?.filename || "Hey, wanna listen "} 
+                          duration = {this.context.currentAudio?.duration || "to some tunes?_"}
                           onAudioPress={() => router.push('../(seps)/player')}
                           menuPress = {() => {}}
                           isPlaying={this.context.isPlaying}
@@ -299,6 +312,7 @@ export class Music extends Component {
                     </View>
                 </SafeAreaView>
                 )
+              }
             }}
 
           </AudioContext.Consumer>
