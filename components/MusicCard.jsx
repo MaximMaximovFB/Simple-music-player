@@ -59,4 +59,4 @@ const MusicCard = ({ title, thumbnail, soundtrack, creator, key, duration, menuP
   )
 }
 
-export default MusicCard
+export default MusicCard;

@@ -1,4 +1,4 @@
-import { View, Dimensions } from 'react-native'
+import { View, Dimensions, Text } from 'react-native'
 import React, { Component } from 'react'
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -216,7 +216,10 @@ export class Music extends Component {
   // Отображение элементов RecyclerListView 
   rowRenderer = (type, item, index, extendedState) => {
     // console.log(extendedState);
-    return (
+    if (!item || !item.filename) {
+      return null; // Или заглушка, если данные ещё загружаются
+    }
+    return (     
       <MusicCard 
         title={item.filename} 
         duration = {item.duration} 
@@ -232,73 +235,77 @@ export class Music extends Component {
     return (
           <AudioContext.Consumer>
             {({dataProvider, isPlaying}) => {
-              if (!dataProvider._data.length) return null;
-              return (
-                <SafeAreaView className = "flex-1 bg-primary">
-                    <View className = "w-[96%] self-center flex-1 flex-col justify-normal">
-                      <View className="flex-col ">
-                        <View className="mt-2">
-                          <SearchInput/>
+              if (!dataProvider || !dataProvider._data || dataProvider._data.length === 0) {
+                return <Text>No audio files available</Text>;
+              } else {
+                return (
+                  <SafeAreaView className = "flex-1 bg-primary">
+                      <View className = "w-[96%] self-center flex-1 flex-col justify-normal">
+                        <View className="flex-col ">
+                          <View className="mt-2">
+                            <SearchInput/>
+                          </View>
+                          <View className="flex-row justify-around h-[6vh]">
+                            <CustomIconButton
+                              handlePress = {() => {}}
+                              containerStyles = "my-3 px-3"
+                              iconName = "play-circle-fill"
+                              iconSize = {24}
+                              iconColor = "white"
+                              libName = {"MaterialIcons"}
+                            />
+                            {/* <CustomIconButton
+                              handlePress = {() => {}}
+                              containerStyles = "my-3 px-3"
+                              iconName = "add-box"
+                              iconSize = {24}
+                              iconColor = "white"
+                              libName = {"MaterialIcons"}
+                            /> */}
+                            <CustomIconButton
+                              handlePress = {() => {
+                                const { updateState, refreshAudioFiles } = this.context;
+                                refreshAudioFiles();
+                                updateState();
+                              }}
+                              containerStyles = "my-3 px-3"
+                              iconName = "refresh"
+                              iconSize = {24}
+                              iconColor = "white"
+                              libName = {"MaterialIcons"}
+                            />                       
+                          </View>
                         </View>
-                        <View className="flex-row justify-around h-[6vh]">
-                          <CustomIconButton
-                            handlePress = {() => {}}
-                            containerStyles = "my-3 px-3"
-                            iconName = "play-circle-fill"
-                            iconSize = {24}
-                            iconColor = "white"
-                            libName = {"MaterialIcons"}
+                        <View className= "flex-1 mt-2 border-t-2 border-solid border-secondary">
+                          <RecyclerListView
+                            dataProvider={dataProvider} 
+                            layoutProvider={this.layoutProvider} 
+                            rowRenderer={this.rowRenderer}
+                            extendedState={{isPlaying}}
                           />
-                          {/* <CustomIconButton
-                            handlePress = {() => {}}
-                            containerStyles = "my-3 px-3"
-                            iconName = "add-box"
-                            iconSize = {24}
-                            iconColor = "white"
-                            libName = {"MaterialIcons"}
-                          /> */}
-                          <CustomIconButton
-                            handlePress = {() => {
-                              const { updateState, refreshAudioFiles } = this.context;
-                              refreshAudioFiles();
-                              updateState();
-                            }}
-                            containerStyles = "my-3 px-3"
-                            iconName = "refresh"
-                            iconSize = {24}
-                            iconColor = "white"
-                            libName = {"MaterialIcons"}
-                          />                       
+                          
                         </View>
                       </View>
-                      <View className= "flex-1 mt-2 border-t-2 border-solid border-secondary">
-                        <RecyclerListView
-                          dataProvider={dataProvider} 
-                          layoutProvider={this.layoutProvider} 
-                          rowRenderer={this.rowRenderer}
-                          extendedState={{isPlaying}}
-                        />
-                        
+                      <View className="self-center w-full border-t-2 border-solid border-secondary">
+                        <View className = "w-[96%] self-center">
+                          <MicroPlayer
+                            isFirstLaunch = {() => {this.context.firstLaunch}}
+                            title={this.context.currentAudio.filename || "Hey, wanna listen "} 
+                            duration = {this.context.currentAudio.duration || "to some tunes?_"}
+                            onAudioPress={() => router.push('../(seps)/player')}
+                            menuPress = {() => {}}
+                            isPlaying={this.context.isPlaying}
+                            activeMusicCard={() => {}}
+                            prevBtn={this.handlePrevious}
+                            nextBtn={this.handleNext}
+                            pauseBtn={() => this.handleAudioPress(this.context.currentAudio)}
+                          />
+                        </View>
                       </View>
-                    </View>
-                    <View className="self-center w-full border-t-2 border-solid border-secondary">
-                      <View className = "w-[96%] self-center">
-                        <MicroPlayer
-                          isFirstLaunch = {() => {this.context.firstLaunch}}
-                          title={this.context.currentAudio.filename || "Hey, wanna listen "} 
-                          duration = {this.context.currentAudio.duration || "to some tunes?_"}
-                          onAudioPress={() => router.push('../(seps)/player')}
-                          menuPress = {() => {}}
-                          isPlaying={this.context.isPlaying}
-                          activeMusicCard={() => {}}
-                          prevBtn={this.handlePrevious}
-                          nextBtn={this.handleNext}
-                          pauseBtn={() => this.handleAudioPress(this.context.currentAudio)}
-                        />
-                      </View>
-                    </View>
-                </SafeAreaView>
+                  </SafeAreaView>
                 )
+              }
+
             }}
 
           </AudioContext.Consumer>
@@ -306,4 +313,4 @@ export class Music extends Component {
   }
 }
 
-export default Music
+export default Music;

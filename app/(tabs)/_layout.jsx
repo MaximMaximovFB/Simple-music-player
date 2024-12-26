@@ -55,7 +55,7 @@ const TabsLayout = () => {
             }}
         />
         <Tabs.Screen
-            name = "all_playlists"
+            name = "all-playlists"
             options={{
             title: "AllPlaylists",
             headerShown: false,
@@ -92,4 +92,4 @@ const TabsLayout = () => {
   )
 }
 
-export default TabsLayout
+export default TabsLayout;

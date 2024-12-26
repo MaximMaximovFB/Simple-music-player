@@ -9,4 +9,4 @@ const sepsLayout = () => {
   )
 }
 
-export default sepsLayout
+export default sepsLayout;

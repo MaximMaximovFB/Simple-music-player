@@ -81,4 +81,4 @@ const MicroPlayer = ({ title, duration, menuPress, menuIsVisible, onAudioPress, 
   )
 }
 
-export default MicroPlayer
+export default MicroPlayer;

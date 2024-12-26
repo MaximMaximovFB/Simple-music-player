@@ -9,4 +9,4 @@ const TagEditor = () => {
   )
 }
 
-export default TagEditor
+export default TagEditor;

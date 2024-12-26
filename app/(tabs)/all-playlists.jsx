@@ -9,4 +9,4 @@ const AllPlaylists = () => {
   )
 }
 
-export default AllPlaylists
+export default AllPlaylists;
