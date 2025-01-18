@@ -2,6 +2,7 @@ import { Text, View } from "react-native";
 import React from "react";
 import { Tabs } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { twMerge } from "tailwind-merge";
 
 import { AudioProvider } from "../../context/AudioProvider";
 
@@ -15,9 +16,9 @@ const TabIcon = ({ icon, color, name, focused, size }) => {
                 color="white"
             />
             <Text
-                className={`text-white ${
+                className={twMerge(`text-white
                     focused ? "font-scExtraBold" : "font-scRegular"
-                }`}
+                `)}
             >
                 {name}
             </Text>
