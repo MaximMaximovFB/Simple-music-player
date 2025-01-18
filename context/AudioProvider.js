@@ -210,4 +210,4 @@ export class AudioProvider extends Component {
     }
 }
 
-export default AudioProvider
+export default AudioProvider;
