@@ -1,12 +1,12 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { View, Text } from "react-native";
+import React from "react";
 
-const sepsLayout = () => {
-  return (
-    <View>
-      <Text>sepsLayout</Text>
-    </View>
-  )
-}
+const SepsLayout = () => {
+    return (
+        <View>
+            <Text>sepsLayout</Text>
+        </View>
+    );
+};
 
-export default sepsLayout;
+export default SepsLayout;

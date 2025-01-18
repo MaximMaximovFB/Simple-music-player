@@ -1,23 +1,23 @@
-import { Alert, Text, View } from 'react-native';
-import React, { Component, createContext } from 'react';
-import * as MediaLibrary from 'expo-media-library';
-import { DataProvider } from 'recyclerlistview';
-import * as FileSystem from 'expo-file-system';
-import AsyncStorage from '@react-native-async-storage/async-storage';
- 
+import { Alert, Text, View } from "react-native";
+import React, { Component, createContext } from "react";
+import * as MediaLibrary from "expo-media-library";
+import { DataProvider } from "recyclerlistview";
+import * as FileSystem from "expo-file-system";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const AudioContext = createContext();
 
 const AUDIO_FILE = `${FileSystem.documentDirectory}audioFiles.json`;
 
 export class AudioProvider extends Component {
-
     constructor(props) {
         super(props);
         this.state = {
             audioFiles: [], // Массив аудиофайлов
             permissionError: false, // Флаг для ошибки разрешений
-            dataProvider: new DataProvider((firstRule, secondRule) => firstRule !== secondRule), // Провайдер данных для RecyclerListView
+            dataProvider: new DataProvider(
+                (firstRule, secondRule) => firstRule !== secondRule
+            ), // Провайдер данных для RecyclerListView
             playbackObject: null, // Объект воспроизведения
             soundObject: null, // Текущий аудиофайл
             currentAudio: {}, // Данные текущего воспроизводимого трека
@@ -41,9 +41,12 @@ export class AudioProvider extends Component {
                 this.setState({
                     audioFiles,
                     totalAudioCount: audioFiles.length,
-                    dataProvider: this.state.dataProvider.cloneWithRows(audioFiles),
+                    dataProvider:
+                        this.state.dataProvider.cloneWithRows(audioFiles),
                 });
-                console.log(`${this.totalAudioCount} audio files has been loaded from JSON file.`);
+                console.log(
+                    `${this.totalAudioCount} audio files has been loaded from JSON file.`
+                );
             } else {
                 console.log("JSON file not found, scanning memory...");
                 await this.getAudioFiles();
@@ -53,11 +56,13 @@ export class AudioProvider extends Component {
         }
     };
 
-    
     // Сохранение аудиофайлов в JSON-файл
     saveToJSON = async (audioFiles) => {
         try {
-            await FileSystem.writeAsStringAsync(AUDIO_FILE, JSON.stringify(audioFiles));
+            await FileSystem.writeAsStringAsync(
+                AUDIO_FILE,
+                JSON.stringify(audioFiles)
+            );
             console.log("Saved audio files to JSON");
         } catch (error) {
             console.error("Error saving audio files:", error);
@@ -67,46 +72,49 @@ export class AudioProvider extends Component {
     // Уведомление о необходимости разрешений
     permissionAlert = () => {
         Alert.alert(
-            "Permission required", 
-            "This app needs to read audio files!", 
+            "Permission required",
+            "This app needs to read audio files!",
             [
-                {text: 'I am ready', onPress: () => this.getPermission()},
-                {text: 'cancel', onPress: () => this.permissionAlert()}
+                { text: "I am ready", onPress: () => this.getPermission() },
+                { text: "cancel", onPress: () => this.permissionAlert() },
             ]
-        )
-    }
+        );
+    };
 
     // Сканирование памяти устройства для поиска аудиофайлов
     getAudioFiles = async () => {
-        const {dataProvider, audioFiles} = this.state
+        const { dataProvider, audioFiles } = this.state;
         let media = await MediaLibrary.getAssetsAsync({
-            mediaType: 'audio'
+            mediaType: "audio",
         });
         media = await MediaLibrary.getAssetsAsync({
-            mediaType: 'audio', 
+            mediaType: "audio",
             first: media.totalCount,
         });
 
-        this.totalAudioCount = media.totalCount
+        this.totalAudioCount = media.totalCount;
         // console.log(media.assets.length);
         //  console.log(media);
-       
+
         console.log("Memory has been scanned");
         console.log(`${media.totalCount} audio files were found.`);
         this.saveToJSON(media.assets);
         this.setState({
-            ...this.state, 
-                dataProvider: dataProvider.cloneWithRows([...audioFiles, ...media.assets]), 
-                audioFiles:[...audioFiles, ...media.assets]
-            })
-    }
+            ...this.state,
+            dataProvider: dataProvider.cloneWithRows([
+                ...audioFiles,
+                ...media.assets,
+            ]),
+            audioFiles: [...audioFiles, ...media.assets],
+        });
+    };
 
     // Получение разрешений на чтение от пользователя
     getPermission = async () => {
         // {
-        //     "accessPrivileges": "none", 
-        //     "canAskAgain": true, "expires": 
-        //     "never", "granted": false, 
+        //     "accessPrivileges": "none",
+        //     "canAskAgain": true, "expires":
+        //     "never", "granted": false,
         //     "status": "undetermined"
         // }
         const permission = await MediaLibrary.getPermissionsAsync();
@@ -116,27 +124,28 @@ export class AudioProvider extends Component {
         }
 
         if (!permission.canAskAgain && !permission.granted) {
-            this.setState({...this.state, permissionError: true});
+            this.setState({ ...this.state, permissionError: true });
         }
 
         if (!permission.granted && permission.canAskAgain) {
-            const {status, canAskAgain} = await MediaLibrary.requestPermissionsAsync();
-            if (status==='denied' && canAskAgain) {
+            const { status, canAskAgain } =
+                await MediaLibrary.requestPermissionsAsync();
+            if (status === "denied" && canAskAgain) {
                 this.permissionAlert();
             }
-            if (status==='granted') {
+            if (status === "granted") {
                 await this.loadFromJSON();
             }
 
-            if (status==='denied' && !canAskAgain) {
-                this.setState({...this.state, permissionError: true})
+            if (status === "denied" && !canAskAgain) {
+                this.setState({ ...this.state, permissionError: true });
             }
         }
     };
 
     // Загрузка трека, который проигрывался перед последним завершение рбаоты приложения.
     loadPreviousAudio = async () => {
-        let previousAudio = await AsyncStorage.getItem('previousAudio');
+        let previousAudio = await AsyncStorage.getItem("previousAudio");
         let currentAudio;
         let currentAudioIndex;
 
@@ -149,27 +158,26 @@ export class AudioProvider extends Component {
             currentAudioIndex = previousAudio.index;
         }
 
-        this.setState({...this.state, currentAudio, currentAudioIndex});
-    }
+        this.setState({ ...this.state, currentAudio, currentAudioIndex });
+    };
 
-
-    componentDidMount(){
+    componentDidMount() {
         this.getPermission();
     }
-    
+
     // Обновление состояния аудиоплеера
     updateState = (previousState, newState = {}) => {
-        this.setState({...previousState, ...newState});
-    }
+        this.setState({ ...previousState, ...newState });
+    };
 
     render() {
         const {
-            audioFiles, 
-            dataProvider, 
-            permissionError, 
-            playbackObject, 
-            soundObject, 
-            currentAudio, 
+            audioFiles,
+            dataProvider,
+            permissionError,
+            playbackObject,
+            soundObject,
+            currentAudio,
             isPlaying,
             currentAudioIndex,
             playbackPosition,
@@ -180,32 +188,36 @@ export class AudioProvider extends Component {
         if (permissionError) {
             return (
                 <View className="flex-1 justify-center items-center">
-                    <Text className = "text-white font-scBold">
-                        Apparently you have not given permission to read audio files. You can always change this in your device settings.
+                    <Text className="text-white font-scBold">
+                        Apparently you have not given permission to read audio
+                        files. You can always change this in your device
+                        settings.
                     </Text>
                 </View>
             );
-        } 
+        }
 
         // контекст для других компонентов
         return (
-        <AudioContext.Provider value={{ 
-            audioFiles, 
-            dataProvider, 
-            playbackObject, 
-            soundObject, 
-            currentAudio, 
-            isPlaying, 
-            currentAudioIndex, 
-            playbackPosition,
-            playbackDuration,
-            totalAudioCount: this.totalAudioCount,
-            updateState: this.updateState, 
-            refreshAudioFiles: this.getAudioFiles, // Expose refresh method
-            loadPreviousAudio: this.loadPreviousAudio,
-            }}>
-            {this.props.children}
-        </AudioContext.Provider>
+            <AudioContext.Provider
+                value={{
+                    audioFiles,
+                    dataProvider,
+                    playbackObject,
+                    soundObject,
+                    currentAudio,
+                    isPlaying,
+                    currentAudioIndex,
+                    playbackPosition,
+                    playbackDuration,
+                    totalAudioCount: this.totalAudioCount,
+                    updateState: this.updateState,
+                    refreshAudioFiles: this.getAudioFiles, // Expose refresh method
+                    loadPreviousAudio: this.loadPreviousAudio,
+                }}
+            >
+                {this.props.children}
+            </AudioContext.Provider>
         );
     }
 }
