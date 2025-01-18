@@ -9,7 +9,7 @@ const CustomIconButton = ({ iconName, iconSize, iconColor, handlePress, containe
 
   return (
     // border-secondary border-solid border-2 
-    <View className = "min-h-[{iconSize+2}]">
+    <View className = "min-h-[26px]">
       <TouchableOpacity  
         onPress = { handlePress}
         activeOpacity={0.7}
@@ -22,5 +22,4 @@ const CustomIconButton = ({ iconName, iconSize, iconColor, handlePress, containe
   )
 }
 
-// export {CustomButton };
 export default CustomIconButton;
